@@ -79,6 +79,8 @@ fun ProfileCard(
                         fontSize = 25.sp
                     )
 
+                    Text(text = user.biography)
+
                     Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                         Button(
                             enabled = user.name != "" && user.pictures.isNotEmpty(),
