@@ -1,5 +1,6 @@
 package com.example.nottinder
 
+import androidx.collection.emptyIntList
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -60,55 +61,79 @@ fun ProfileCard(
             .fillMaxSize()
             .padding(10.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (user.pictures.isNotEmpty()) {
-                val imageResource = painterResource(imageID)
-                var imageWidth by remember { mutableIntStateOf(0) }
-                Image(
-                    painter = imageResource,
-                    contentDescription = "",
+        if (user.pictures.isNotEmpty() && user.name.isNotEmpty()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (user.pictures.isNotEmpty()) {
+                    UserImage(imageID, onImageClick)
+                } else {
+                    Text(text = "No user found", modifier = Modifier.align(Alignment.Center))
+                }
+                Column(
                     modifier = Modifier
-                        //.clickable(onClick = { onImageClick() })
-                        .onGloballyPositioned {
-                            imageWidth = it.size.width
-                        }
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onTap = { offset ->
-                                    val leftTap =
-                                        if (offset.x < imageWidth / 2) {
-                                            true
-                                        } else {
-                                            false
-                                        }
-                                    onImageClick(leftTap)
-                                }
-                            )
-                        }
-                        .fillMaxSize()
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .align(Alignment.BottomCenter)
-            ) {
-                Text(
-                    text = user.name,
-                    fontSize = 25.sp
-                )
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text(
+                        text = user.name,
+                        fontSize = 25.sp
+                    )
 
-                Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    Button(onClick = onYes) {
-                        Text("Yes")
-                    }
-                    Spacer(modifier = Modifier.padding(horizontal = 100.dp))
-                    Button(onClick = onNo) {
-                        Text("No")
+                    Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Button(
+                            enabled = user.name != "" && user.pictures.isNotEmpty(),
+                            onClick = onYes
+                        ) {
+                            Text("Yes")
+                        }
+                        Spacer(modifier = Modifier.padding(horizontal = 100.dp))
+                        Button(
+                            enabled = user.name != "" && user.pictures.isNotEmpty(),
+                            onClick = onNo
+                        ) {
+                            Text("No")
+                        }
                     }
                 }
             }
+        } else {
+            Text(text = "No user found", modifier = Modifier.align(Alignment.CenterHorizontally))
         }
     }
+}
+
+@Composable
+fun UserImage(imageID: Int, onImageClick: (Boolean) -> Unit) {
+    val imageResource = painterResource(imageID)
+    var imageWidth by remember { mutableIntStateOf(0) }
+    Image(
+        painter = imageResource,
+        contentDescription = "",
+        modifier = Modifier
+            //.clickable(onClick = { onImageClick() })
+            .onGloballyPositioned {
+                imageWidth = it.size.width
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val leftTap =
+                            if (offset.x < imageWidth / 2) {
+                                true
+                            } else {
+                                false
+                            }
+                        onImageClick(leftTap)
+                    }
+                )
+            }
+            .fillMaxSize()
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewProfileCard() {
+    val user = User("", "", emptyIntList())
+    ProfileCard(user, 0, {}, {}, {})
 }
