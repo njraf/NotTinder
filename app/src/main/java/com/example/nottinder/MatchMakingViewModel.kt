@@ -1,5 +1,6 @@
 package com.example.nottinder
 
+import android.util.Log
 import androidx.collection.intListOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
@@ -50,15 +51,22 @@ class MatchMakingViewModel : ViewModel() {
         }
     }
 
-    fun nextImage() {
-        if(state.value.imageIndex + 1 >= state.value.currentCandidate.pictures.size) {
-            return
+    fun changeImage(leftTap: Boolean) {
+        val direction = if(leftTap) -1 else 1
+        if(leftTap) {
+            if(state.value.imageIndex + direction < 0) {
+                return
+            }
+        } else {
+            if(state.value.imageIndex + direction >= state.value.currentCandidate.pictures.size) {
+                return
+            }
         }
 
         _state.update { currentState ->
             currentState.copy(
                 currentCandidate = candidates.first(),
-                imageIndex = currentState.imageIndex + 1
+                imageIndex = currentState.imageIndex + direction
             )
         }
     }
