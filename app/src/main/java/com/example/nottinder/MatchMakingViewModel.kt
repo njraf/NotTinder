@@ -1,9 +1,6 @@
 package com.example.nottinder
 
-import android.util.Log
 import androidx.collection.intListOf
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +9,7 @@ import kotlinx.coroutines.flow.update
 
 data class MatchMakingState(
     val currentCandidate: User = User("No Users Found"),
-    val imageIndex: Int = 0
+    val imageID: Int = 0
 )
 
 class MatchMakingViewModel : ViewModel() {
@@ -24,14 +21,18 @@ class MatchMakingViewModel : ViewModel() {
         User("Sammy"),
     )
 
+    private var currentImageIndex = 0
+
     private var _state: MutableStateFlow<MatchMakingState> = MutableStateFlow(MatchMakingState())
     var state: StateFlow<MatchMakingState> = _state.asStateFlow()
 
 
     init {
         _state.update { currentState ->
+            val nextCandidate = candidates.first()
             currentState.copy(
-                currentCandidate = candidates.first()
+                currentCandidate = nextCandidate,
+                imageID = if(nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
             )
         }
     }
@@ -43,10 +44,13 @@ class MatchMakingViewModel : ViewModel() {
             return
         }
 
+        currentImageIndex = 0
+
         _state.update { currentState ->
+            val nextCandidate = candidates.first()
             currentState.copy(
-                currentCandidate = candidates.first(),
-                imageIndex = 0
+                currentCandidate = nextCandidate,
+                imageID = if(nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
             )
         }
     }
@@ -54,19 +58,20 @@ class MatchMakingViewModel : ViewModel() {
     fun changeImage(leftTap: Boolean) {
         val direction = if(leftTap) -1 else 1
         if(leftTap) {
-            if(state.value.imageIndex + direction < 0) {
+            if(currentImageIndex + direction < 0) {
                 return
             }
+            currentImageIndex--
         } else {
-            if(state.value.imageIndex + direction >= state.value.currentCandidate.pictures.size) {
+            if(currentImageIndex + direction >= state.value.currentCandidate.pictures.size) {
                 return
             }
+            currentImageIndex++
         }
 
         _state.update { currentState ->
             currentState.copy(
-                currentCandidate = candidates.first(),
-                imageIndex = currentState.imageIndex + direction
+                imageID = state.value.currentCandidate.pictures[currentImageIndex]
             )
         }
     }

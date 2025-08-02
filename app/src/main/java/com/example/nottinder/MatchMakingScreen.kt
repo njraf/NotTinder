@@ -37,17 +37,17 @@ fun MatchMakingScreen() {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ProfileCard(
-        state.currentCandidate,
-        state.imageIndex,
-        { viewModel.nextCandidate() },
-        { viewModel.nextCandidate() },
-        { viewModel.changeImage(it) })
+        user = state.currentCandidate,
+        imageID = state.imageID,
+        onYes = { viewModel.nextCandidate() },
+        onNo = { viewModel.nextCandidate() },
+        onImageClick = { viewModel.changeImage(it) })
 }
 
 @Composable
 fun ProfileCard(
     user: User,
-    imageIndex: Int,
+    imageID: Int,
     onYes: () -> Unit,
     onNo: () -> Unit,
     onImageClick: (leftTap: Boolean) -> Unit
@@ -62,21 +62,21 @@ fun ProfileCard(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (user.pictures.isNotEmpty()) {
-                val imageResource = painterResource(user.pictures[imageIndex])
-                var imageSize by remember { mutableIntStateOf(0) }
+                val imageResource = painterResource(imageID)
+                var imageWidth by remember { mutableIntStateOf(0) }
                 Image(
                     painter = imageResource,
                     contentDescription = "",
                     modifier = Modifier
                         //.clickable(onClick = { onImageClick() })
                         .onGloballyPositioned {
-                            imageSize = it.size.width
+                            imageWidth = it.size.width
                         }
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onTap = { offset ->
                                     val leftTap =
-                                        if (offset.x < imageSize / 2) {
+                                        if (offset.x < imageWidth / 2) {
                                             true
                                         } else {
                                             false
