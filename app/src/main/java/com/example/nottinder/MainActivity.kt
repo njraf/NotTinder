@@ -50,8 +50,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotTinderTheme {
-                var topPage by remember { mutableStateOf<Route>(Route.Candidates) }
-
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)
 
@@ -63,9 +61,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val changeBackstack: (Route) -> Unit = { route ->
-
+                    if (route != currentBackStack.first()) {
                         backstackKey = route
-
+                    }
                 }
 
                 NavDisplay(
@@ -73,11 +71,13 @@ class MainActivity : ComponentActivity() {
                     onBack = { currentBackStack.removeLastOrNull() }) { route ->
                     when (route) {
                         is Route.Candidates -> NavEntry(route) {
-                            MatchMakingScreen(topPage, changeBackstack)
+                            MatchMakingScreen(backstackKey, changeBackstack)
                         }
+
                         is Route.Profile -> NavEntry(route) {
-                            ProfileScreen(topPage, changeBackstack)
+                            ProfileScreen(backstackKey, changeBackstack)
                         }
+
                         else -> NavEntry(route) { Text("Unknown Page") }
                     }
                 }
