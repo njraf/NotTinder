@@ -4,8 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -89,17 +92,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BottomBar(currentBackstackTopPage: Route, onClick: (Route) -> Unit) {
     BottomAppBar(actions = {
-        IconButton(onClick = { onClick(Route.Candidates) }) {
-            Icon(
-                if (currentBackstackTopPage is Route.Candidates) Icons.Filled.AccountBox else Icons.Outlined.AccountBox,
-                contentDescription = ""
-            )
-        }
-        IconButton(onClick = { onClick(Route.Profile) }) {
-            Icon(
-                if (currentBackstackTopPage is Route.Profile) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
-                contentDescription = ""
-            )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            IconButton(onClick = { onClick(Route.Candidates) }) {
+                Icon(
+                    if (currentBackstackTopPage is Route.Candidates) Icons.Filled.AccountBox else Icons.Outlined.AccountBox,
+                    contentDescription = ""
+                )
+            }
+            IconButton(onClick = { onClick(Route.Profile) }) {
+                Icon(
+                    if (currentBackstackTopPage is Route.Profile) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
+                    contentDescription = ""
+                )
+            }
         }
     })
 }
