@@ -1,6 +1,7 @@
 package com.example.nottinder
 
 import androidx.collection.emptyIntList
+import androidx.collection.intListOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -80,34 +80,14 @@ fun ProfileCard(
                 } else {
                     Text(text = "No user found", modifier = Modifier.align(Alignment.Center))
                 }
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp)
                         .align(Alignment.BottomCenter)
                 ) {
-                    Text(
-                        text = user.name,
-                        fontSize = 25.sp
-                    )
-
-                    Text(text = user.biography)
-
-                    Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                        Button(
-                            enabled = user.name != "" && user.pictures.isNotEmpty(),
-                            onClick = onYes
-                        ) {
-                            Text("Yes")
-                        }
-                        Spacer(modifier = Modifier.padding(horizontal = 100.dp))
-                        Button(
-                            enabled = user.name != "" && user.pictures.isNotEmpty(),
-                            onClick = onNo
-                        ) {
-                            Text("No")
-                        }
-                    }
+                    BioAndButtons(user, onYes, onNo)
                 }
             }
         } else {
@@ -145,9 +125,49 @@ fun UserImage(imageID: Int, onImageClick: (Boolean) -> Unit) {
     )
 }
 
+@Composable
+fun BioAndButtons(
+    user: User,
+    onYes: () -> Unit,
+    onNo: () -> Unit,
+) {
+    Column() {
+        Text(
+            text = user.name,
+            fontSize = 25.sp
+        )
+
+        Text(text = user.biography)
+
+        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            val buttonsEnabled = user.name != ""
+            Button(
+                enabled = buttonsEnabled,
+                onClick = onYes
+            ) {
+                Text("Like")
+            }
+            Spacer(modifier = Modifier.padding(horizontal = 100.dp))
+            Button(
+                enabled = buttonsEnabled,
+                onClick = onNo
+            ) {
+                Text("Dislike")
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileCard() {
-    val user = User("", "", emptyIntList())
-    ProfileCard(user, 0, {}, {}, {})
+    val user = User("Jack", "First name: Lumber", intListOf(R.drawable.pika1))
+    ProfileCard(user, user.pictures.first(), {}, {}, {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewBioAndButtons() {
+    val user = User("Jack", "First name: Lumber", emptyIntList())
+    BioAndButtons(user, {}, {})
 }
