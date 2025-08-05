@@ -9,8 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ProfileScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
-
+fun SettingsScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -18,7 +17,7 @@ fun ProfileScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            Text("Profile screen")
+            Text("Settings screen")
         }
     }
 }

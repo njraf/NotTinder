@@ -14,9 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +47,9 @@ sealed interface Route : NavKey {
 
     @Serializable
     data object Profile : Route
+
+    @Serializable
+    data object Settings : Route
 }
 
 class MainActivity : ComponentActivity() {
@@ -55,11 +60,13 @@ class MainActivity : ComponentActivity() {
             NotTinderTheme {
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)
+                val settingsBackstack = rememberNavBackStack(Route.Settings)
 
                 var backstackKey: Route by remember { mutableStateOf(Route.Candidates) }
                 val currentBackStack = when (backstackKey) {
                     Route.Candidates -> candidatesBackstack
                     Route.Profile -> profileBackstack
+                    Route.Settings -> settingsBackstack
                     else -> candidatesBackstack
                 }
 
@@ -79,6 +86,10 @@ class MainActivity : ComponentActivity() {
 
                         is Route.Profile -> NavEntry(route) {
                             ProfileScreen(backstackKey, changeBackstack)
+                        }
+
+                        is Route.Settings -> NavEntry(route) {
+                            SettingsScreen(backstackKey, changeBackstack)
                         }
 
                         else -> NavEntry(route) { Text("Unknown Page") }
@@ -102,6 +113,12 @@ fun BottomBar(currentBackstackTopPage: Route, onClick: (Route) -> Unit) {
             IconButton(onClick = { onClick(Route.Profile) }) {
                 Icon(
                     if (currentBackstackTopPage is Route.Profile) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
+                    contentDescription = ""
+                )
+            }
+            IconButton(onClick = { onClick(Route.Settings) }) {
+                Icon(
+                    if (currentBackstackTopPage is Route.Settings) Icons.Filled.Settings else Icons.Outlined.Settings,
                     contentDescription = ""
                 )
             }

@@ -41,9 +41,7 @@ fun MatchMakingScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            BottomBar(topPage, { route ->
-                onBottomNavigate(route)
-            })
+            BottomBar(topPage, onBottomNavigate)
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
