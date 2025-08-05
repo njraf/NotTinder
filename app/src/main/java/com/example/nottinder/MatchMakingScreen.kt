@@ -14,10 +14,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,19 +32,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-@Preview(showBackground = true)
 @Composable
-fun MatchMakingScreen() {
+fun MatchMakingScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
 
     val viewModel: MatchMakingViewModel = viewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ProfileCard(
-        user = state.currentCandidate,
-        imageID = state.imageID,
-        onYes = { viewModel.nextCandidate() },
-        onNo = { viewModel.nextCandidate() },
-        onImageClick = { viewModel.changeImage(it) })
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            BottomBar(topPage, { route ->
+                onBottomNavigate(route)
+            })
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            ProfileCard(
+                user = state.currentCandidate,
+                imageID = state.imageID,
+                onYes = { viewModel.nextCandidate() },
+                onNo = { viewModel.nextCandidate() },
+                onImageClick = { viewModel.changeImage(it) })
+        }
+    }
 }
 
 @Composable

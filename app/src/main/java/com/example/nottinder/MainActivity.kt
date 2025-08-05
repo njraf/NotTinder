@@ -7,12 +7,42 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.AccountBox
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import com.example.nottinder.ui.theme.NotTinderTheme
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed interface Route : NavKey {
+    @Serializable
+    data object Candidates : Route
+
+    @Serializable
+    data object Profile : Route
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,12 +50,63 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotTinderTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(modifier = Modifier.padding(innerPadding)) {
-                        MatchMakingScreen()
+                var topPage by remember { mutableStateOf<Route>(Route.Candidates) }
+
+                val candidatesBackstack = rememberNavBackStack(Route.Candidates)
+                val profileBackstack = rememberNavBackStack(Route.Profile)
+
+                var backstackKey: Route by remember { mutableStateOf(Route.Candidates) }
+                val currentBackStack = when (backstackKey) {
+                    Route.Candidates -> candidatesBackstack
+                    Route.Profile -> profileBackstack
+                    else -> candidatesBackstack
+                }
+
+                val changeBackstack: (Route) -> Unit = { route ->
+
+                        backstackKey = route
+
+                }
+
+                NavDisplay(
+                    backStack = currentBackStack,
+                    onBack = { currentBackStack.removeLastOrNull() }) { route ->
+                    when (route) {
+                        is Route.Candidates -> NavEntry(route) {
+                            MatchMakingScreen(topPage, changeBackstack)
+                        }
+                        is Route.Profile -> NavEntry(route) {
+                            ProfileScreen(topPage, changeBackstack)
+                        }
+                        else -> NavEntry(route) { Text("Unknown Page") }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun BottomBar(currentBackstackTopPage: Route, onClick: (Route) -> Unit) {
+    BottomAppBar(actions = {
+        IconButton(onClick = { onClick(Route.Candidates) }) {
+            Icon(
+                if (currentBackstackTopPage is Route.Candidates) Icons.Filled.AccountBox else Icons.Outlined.AccountBox,
+                contentDescription = ""
+            )
+        }
+        IconButton(onClick = { onClick(Route.Profile) }) {
+            Icon(
+                if (currentBackstackTopPage is Route.Profile) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle,
+                contentDescription = ""
+            )
+        }
+    })
+}
+
+@Preview
+@Composable
+fun PreviewBottomBar() {
+    var topPage by remember { mutableStateOf<Route>(Route.Candidates) }
+    BottomBar(topPage, { route -> topPage = route })
 }
