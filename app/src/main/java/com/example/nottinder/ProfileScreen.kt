@@ -2,13 +2,17 @@ package com.example.nottinder
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.CancellationSignal
 import android.util.Log
+import android.util.Size
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,6 +37,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +65,7 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PhotoSelectorArea({ uri ->
+            PhotoSelectorArea(state.self.pictureUris, { uri ->
                 viewModel.addPhoto(uri)
                 onProfileUpdated(state.self)
             })
@@ -67,15 +74,15 @@ fun ProfileScreen(
             TextField(value = bio, onValueChange = { bio = it })
             Button(onClick = {
                 viewModel.updateBio(bio)
-                //bio = ""
                 onProfileUpdated(state.self)
+                //bio = ""
             }) { Text("Submit") }
         }
     }
 }
 
 @Composable
-fun PhotoSelector(onPhotoAdded: (self: Uri) -> Unit) {
+fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
 
     var pickMedia: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>? = null
     var legacyPickerLauncher: ManagedActivityResultLauncher<String, Uri?>? = null
@@ -103,30 +110,57 @@ fun PhotoSelector(onPhotoAdded: (self: Uri) -> Unit) {
         }
     }
 
-    Box(modifier = Modifier
-        .height(200.dp)
-        .padding(1.dp)
-        //.background(color = Color.Red)
-        .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
-        .clickable {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                (pickMedia as androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>)
-                    .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            } else {
-                legacyPickerLauncher?.launch("image/*")
+    Box(
+        modifier = Modifier
+            .height(200.dp)
+            .padding(1.dp)
+            //.background(color = Color.Red)
+            .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
+            .clickable {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    (pickMedia as androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>)
+                        .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                } else {
+                    legacyPickerLauncher?.launch("image/*")
+                }
+            }) {
+        if (photoURI == null) {
+            Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
+        } else {
+            val contentResolver = LocalContext.current.contentResolver
+            val thumbnail: Bitmap? = try {
+                contentResolver.loadThumbnail(
+                    photoURI, Size(10, 10),
+                    CancellationSignal()
+                )
+
+            } catch (e: java.io.IOException) {
+                Log.e("images", "Could not load profile image: ${e.message}")
+                null
             }
-        }) {
-        Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
+
+            if(thumbnail != null) {
+                Image(
+                    BitmapPainter(thumbnail.asImageBitmap()),
+                    contentDescription = "",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
+            }
+        }
     }
 }
 
 @Composable
-fun PhotoSelectorArea(onPhotoAdded: (self: Uri) -> Unit) {
+fun PhotoSelectorArea(photoURIs: List<Uri>, onPhotoAdded: (self: Uri) -> Unit) {
     requestReadMediaPermission()
 
     LazyVerticalGrid(columns = GridCells.Fixed(3)) {
-        items(6) {
-            PhotoSelector(onPhotoAdded)
+        items(6) { idx ->
+            val uri: Uri? = if (photoURIs.size > idx) photoURIs[idx] else null
+            PhotoSelector(uri, onPhotoAdded)
         }
     }
 }
@@ -165,5 +199,5 @@ fun requestReadMediaPermission() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewPhotoSelectorArea() {
-    PhotoSelectorArea({})
+    PhotoSelectorArea(emptyList(), {})
 }
