@@ -15,6 +15,7 @@ data class MatchMakingState(
 
 class MatchMakingViewModel : ViewModel() {
     private val nullCandidate = User("", "", emptyIntList())
+    private var self: User? = null
     private var candidates = mutableListOf<User>(
         User(
             "Link",
@@ -85,6 +86,21 @@ class MatchMakingViewModel : ViewModel() {
         _state.update { currentState ->
             currentState.copy(
                 imageID = state.value.currentCandidate.pictures[currentImageIndex]
+            )
+        }
+    }
+
+    fun updateSelf(myself: User) {
+        candidates.remove(self)
+        self = myself
+        candidates.add(0, myself)
+        currentImageIndex = 0
+
+        _state.update { currentState ->
+            val nextCandidate = if(candidates.isNotEmpty()) candidates.first() else nullCandidate
+            currentState.copy(
+                currentCandidate = nextCandidate,
+                imageID = if (nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
             )
         }
     }

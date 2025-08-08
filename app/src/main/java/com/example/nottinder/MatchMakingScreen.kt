@@ -33,9 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun MatchMakingScreen(topPage: Route, onBottomNavigate: (Route) -> Unit) {
+fun MatchMakingScreen(viewModel: MatchMakingViewModel, topPage: Route, onBottomNavigate: (Route) -> Unit) {
 
-    val viewModel: MatchMakingViewModel = viewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(

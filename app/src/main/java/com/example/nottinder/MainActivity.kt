@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -58,6 +59,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotTinderTheme {
+                val matchMakingViewModel: MatchMakingViewModel = viewModel()
+                val profileViewModel: ProfileViewModel = viewModel()
+
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)
                 val settingsBackstack = rememberNavBackStack(Route.Settings)
@@ -81,11 +85,13 @@ class MainActivity : ComponentActivity() {
                     onBack = { currentBackStack.removeLastOrNull() }) { route ->
                     when (route) {
                         is Route.Candidates -> NavEntry(route) {
-                            MatchMakingScreen(backstackKey, changeBackstack)
+                            MatchMakingScreen(matchMakingViewModel,  backstackKey, changeBackstack)
                         }
 
                         is Route.Profile -> NavEntry(route) {
-                            ProfileScreen(backstackKey, changeBackstack)
+                            ProfileScreen(profileViewModel, backstackKey, changeBackstack) { self ->
+                                matchMakingViewModel.updateSelf(self)
+                            }
                         }
 
                         is Route.Settings -> NavEntry(route) {
