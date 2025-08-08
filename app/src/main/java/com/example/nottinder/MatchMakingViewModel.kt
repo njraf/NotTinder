@@ -9,33 +9,37 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class MatchMakingState(
-    val currentCandidate: User = User("", "", emptyIntList()),
+    val currentCandidate: User = User("", "", emptyIntList(), emptyList()),
     val imageID: Int = 0
 )
 
 class MatchMakingViewModel : ViewModel() {
-    private val nullCandidate = User("", "", emptyIntList())
+    private val nullCandidate = User("", "", emptyIntList(), emptyList())
     private var self: User? = null
     private var candidates = mutableListOf<User>(
         User(
             "Link",
             "The hero of Hyrule and a tenacious swordsman.",
-            intListOf(R.drawable.link1, R.drawable.link2, R.drawable.link3)
+            intListOf(R.drawable.link1, R.drawable.link2, R.drawable.link3),
+            emptyList()
         ),
         User(
             "Zelda",
             "The princess of Hyrule and a fierce combatant, loyal to her people.",
-            intListOf(R.drawable.zelda1, R.drawable.zelda2, R.drawable.zelda3)
+            intListOf(R.drawable.zelda1, R.drawable.zelda2, R.drawable.zelda3),
+            emptyList()
         ),
         User(
             "Mario",
             "Wahoo! Wah! Wah! Yipeeeeeee!",
-            intListOf(R.drawable.mario1, R.drawable.mario2, R.drawable.mario3, R.drawable.mario4)
+            intListOf(R.drawable.mario1, R.drawable.mario2, R.drawable.mario3, R.drawable.mario4),
+            emptyList()
         ),
         User(
             "Pikachu",
             "Pika pi! Pikaaaachuuuuuuuuuu!!!!! Pika.",
-            intListOf(R.drawable.pika1, R.drawable.pika2, R.drawable.pika3, R.drawable.pika4)
+            intListOf(R.drawable.pika1, R.drawable.pika2, R.drawable.pika3, R.drawable.pika4),
+            emptyList()
         ),
     )
 

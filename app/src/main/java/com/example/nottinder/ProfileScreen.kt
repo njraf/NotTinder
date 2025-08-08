@@ -2,20 +2,24 @@ package com.example.nottinder
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,9 +30,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -50,7 +58,10 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PhotoSelectorArea(viewModel, onProfileUpdated)
+            PhotoSelectorArea({ uri ->
+                viewModel.addPhoto(uri)
+                onProfileUpdated(state.self)
+            })
 
             var bio by rememberSaveable { mutableStateOf("") }
             TextField(value = bio, onValueChange = { bio = it })
@@ -64,52 +75,64 @@ fun ProfileScreen(
 }
 
 @Composable
-fun PhotoSelector(viewModel: ProfileViewModel, onProfileUpdated: (self: User) -> Unit) {
+fun PhotoSelector(onPhotoAdded: (self: Uri) -> Unit) {
 
-
+    var pickMedia: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>? = null
+    var legacyPickerLauncher: ManagedActivityResultLauncher<String, Uri?>? = null
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val pickMedia =
+        pickMedia =
             rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
                 // Callback is invoked after the user selects a media item or closes the
                 // photo picker.
                 if (uri != null) {
                     Log.d("PhotoPicker", "Selected URI: $uri")
+                    onPhotoAdded(uri)
                 } else {
                     Log.d("PhotoPicker", "No media selected")
                 }
             }
 
-        Box(modifier = Modifier.background(color = Color.Red)) {
-            Text("asd", modifier = Modifier.clickable{
-            (pickMedia as androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>)
-                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            })
-        }
-
     } else {
-        val legacyPickerLauncher = rememberLauncherForActivityResult(
+        legacyPickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri ->
-            //onPhotosSelected(listOfNotNull(uri))
+            if (uri != null) {
+                onPhotoAdded(uri)
+            }
         }
-        legacyPickerLauncher.launch("image/*")
+    }
+
+    Box(modifier = Modifier
+        .height(200.dp)
+        .padding(1.dp)
+        //.background(color = Color.Red)
+        .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
+        .clickable {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                (pickMedia as androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>)
+                    .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            } else {
+                legacyPickerLauncher?.launch("image/*")
+            }
+        }) {
+        Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
     }
 }
 
 @Composable
-fun PhotoSelectorArea(viewModel: ProfileViewModel, onProfileUpdated: (self: User) -> Unit) {
-    requestReadMediaPermission(viewModel)
+fun PhotoSelectorArea(onPhotoAdded: (self: Uri) -> Unit) {
+    requestReadMediaPermission()
 
     LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(6) {
-            PhotoSelector(viewModel, onProfileUpdated)
+            PhotoSelector(onPhotoAdded)
         }
     }
 }
 
 @Composable
-fun requestReadMediaPermission(viewModel: ProfileViewModel) {
+fun requestReadMediaPermission() {
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -137,4 +160,10 @@ fun requestReadMediaPermission(viewModel: ProfileViewModel) {
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewPhotoSelectorArea() {
+    PhotoSelectorArea({})
 }
