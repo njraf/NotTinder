@@ -15,7 +15,7 @@ data class ProfileState(
 )
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor() : ViewModel() {
+class ProfileViewModel @Inject constructor(val photoDataSource: PhotoDataSource) : ViewModel() {
     private var _state: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 

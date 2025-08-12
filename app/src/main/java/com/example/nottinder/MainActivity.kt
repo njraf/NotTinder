@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation3.runtime.NavEntry
@@ -61,8 +62,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotTinderTheme {
-                val matchMakingViewModel: MatchMakingViewModel = viewModel()
-                val profileViewModel: ProfileViewModel = viewModel()
+                val matchMakingViewModel: MatchMakingViewModel = hiltViewModel()
+                val profileViewModel: ProfileViewModel = hiltViewModel()
 
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)

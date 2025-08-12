@@ -6,8 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-data class PhotoDataSource(private val _photos: MutableStateFlow<List<Uri>>) {
+class PhotoDataSource @Inject constructor() {
+
+    private val _photos: MutableStateFlow<List<Uri>> = MutableStateFlow(emptyList())
     val photos: StateFlow<List<Uri>> = _photos.asStateFlow()
 
     fun addPhoto(photo: Uri) {
