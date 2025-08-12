@@ -158,13 +158,13 @@ fun BioAndButtons(
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileCard() {
-    val user = User("Jack", "First name: Lumber", intListOf(R.drawable.pika1), emptyList())
+    val user = User(1,"Jack", "First name: Lumber", intListOf(R.drawable.pika1), emptyList())
     ProfileCard(user, user.pictures.first(), {}, {}, {})
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewBioAndButtons() {
-    val user = User("Jack", "First name: Lumber", emptyIntList(), emptyList())
+    val user = User(1, "Jack", "First name: Lumber", emptyIntList(), emptyList())
     BioAndButtons(user, {}, {})
 }

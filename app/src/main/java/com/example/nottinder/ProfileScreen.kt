@@ -52,8 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     topPage: Route,
-    onBottomNavigate: (Route) -> Unit,
-    onProfileUpdated: (self: User) -> Unit
+    onBottomNavigate: (Route) -> Unit
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -67,15 +66,15 @@ fun ProfileScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             PhotoSelectorArea(state.self.pictureUris, { uri ->
                 viewModel.addPhoto(uri)
-                onProfileUpdated(state.self)
+                //onProfileUpdated(state.self)
             })
 
             var bio by rememberSaveable { mutableStateOf("") }
             TextField(value = bio, onValueChange = { bio = it })
             Button(onClick = {
                 viewModel.updateBio(bio)
-                onProfileUpdated(state.self)
-                //bio = ""
+                //onProfileUpdated(state.self)
+                bio = ""
             }) { Text("Submit") }
         }
     }

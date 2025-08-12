@@ -92,9 +92,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         is Route.Profile -> NavEntry(route) {
-                            ProfileScreen(profileViewModel, backstackKey, changeBackstack) { self ->
-                                matchMakingViewModel.updateSelf(self)
-                            }
+                            ProfileScreen(profileViewModel, backstackKey, changeBackstack)
                         }
 
                         is Route.Settings -> NavEntry(route) {
