@@ -3,19 +3,23 @@ package com.example.nottinder
 import androidx.collection.emptyIntList
 import androidx.collection.intListOf
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
 data class MatchMakingState(
     val currentCandidate: User = User("", "", emptyIntList(), emptyList()),
     val imageID: Int = 0
 )
 
+@HiltViewModel
 class MatchMakingViewModel : ViewModel() {
     private val nullCandidate = User("", "", emptyIntList(), emptyList())
     private var self: User? = null
+
     private var candidates = mutableListOf<User>(
         User(
             "Link",
