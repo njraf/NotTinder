@@ -16,7 +16,7 @@ data class MatchMakingState(
 )
 
 @HiltViewModel
-class MatchMakingViewModel @Inject constructor() : ViewModel() {
+class MatchMakingViewModel @Inject constructor(val photoDataSource: PhotoDataSource) : ViewModel() {
     private val nullCandidate = User("", "", emptyIntList(), emptyList())
     private var self: User? = null
 
