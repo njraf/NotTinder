@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
@@ -186,7 +187,7 @@ fun BioAndButtons(
 @Composable
 fun PreviewProfileCard() {
     val user = User(1, "Jack", "First name: Lumber", emptyList())
-    ProfileCard(user, user.pictureUris.first(), {}, {}, {})
+    ProfileCard(user, "".toUri(), {}, {}, {})
 }
 
 @Preview(showBackground = true)

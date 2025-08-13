@@ -29,7 +29,7 @@ class UserDataSource @Inject constructor() {
     fun updatePhotos(id: Int, photos: List<Uri>) {
         val userList = _users.value.toMutableList()
         if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, "Nick", "", emptyList()))
+            userList.add(0, User(id, "Nick", "", photos))
         } else {
             val targetUser: User = userList.find { it.id == id }!!.copy(pictureUris = photos)
             val targetIndex = userList.indexOfFirst { it.id == id }
