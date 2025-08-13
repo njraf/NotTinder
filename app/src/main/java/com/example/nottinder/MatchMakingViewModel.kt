@@ -1,7 +1,10 @@
 package com.example.nottinder
 
+import android.net.Uri
 import androidx.collection.emptyIntList
 import androidx.collection.intListOf
+import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,19 +16,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MatchMakingState(
-    val currentCandidate: User = User(0, "", "", emptyIntList(), emptyList()),
-    val imageID: Int = 0
+    val currentCandidate: User = User(0, "", "", emptyList()),
+    val photoUri: Uri = "".toUri()
 )
 
 @HiltViewModel
 class MatchMakingViewModel @Inject constructor(
-    private val photoDataSource: PhotoDataSource,
+    //private val photoDataSource: PhotoDataSource,
     private val userDataSource: UserDataSource
 ) : ViewModel() {
-    private val nullCandidate = User(-1, "", "", emptyIntList(), emptyList())
+    private val nullCandidate = User(-1, "", "", emptyList())
     private var self: User? = null
 
-    private var candidates = mutableListOf<User>(
+    private var candidates = mutableListOf<User>()
+        /*mutableListOf<User>(
         User(
             1,
             "Link",
@@ -54,7 +58,7 @@ class MatchMakingViewModel @Inject constructor(
             intListOf(R.drawable.pika1, R.drawable.pika2, R.drawable.pika3, R.drawable.pika4),
             emptyList()
         ),
-    )
+    )*/
 
     private var currentImageIndex = 0
 
@@ -65,13 +69,13 @@ class MatchMakingViewModel @Inject constructor(
     init {
 
         // initialize UI
-        _state.update { currentState ->
-            val nextCandidate = candidates.first()
+        /*_state.update { currentState ->
+            val nextCandidate = candidates.firstOrNull() ?: nullCandidate
             currentState.copy(
                 currentCandidate = nextCandidate,
-                imageID = if (nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
+                photoUri = if (nextCandidate.pictureUris.isEmpty()) "".toUri() else nextCandidate.pictureUris[currentImageIndex]
             )
-        }
+        }*/
 
         viewModelScope.launch {
             userDataSource.users.collect { users ->
@@ -90,7 +94,7 @@ class MatchMakingViewModel @Inject constructor(
             val nextCandidate = if (candidates.isNotEmpty()) candidates.first() else nullCandidate
             currentState.copy(
                 currentCandidate = nextCandidate,
-                imageID = if (nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
+                photoUri = if (nextCandidate.pictureUris.isEmpty()) "".toUri() else nextCandidate.pictureUris[currentImageIndex]
             )
         }
     }
@@ -103,7 +107,7 @@ class MatchMakingViewModel @Inject constructor(
             }
             currentImageIndex--
         } else {
-            if (currentImageIndex + direction >= state.value.currentCandidate.pictures.size) {
+            if (currentImageIndex + direction >= state.value.currentCandidate.pictureUris.size) {
                 return
             }
             currentImageIndex++
@@ -111,7 +115,7 @@ class MatchMakingViewModel @Inject constructor(
 
         _state.update { currentState ->
             currentState.copy(
-                imageID = state.value.currentCandidate.pictures[currentImageIndex]
+                photoUri = state.value.currentCandidate.pictureUris[currentImageIndex]
             )
         }
     }
@@ -126,7 +130,7 @@ class MatchMakingViewModel @Inject constructor(
             val nextCandidate = if (candidates.isNotEmpty()) candidates.first() else nullCandidate
             currentState.copy(
                 currentCandidate = nextCandidate,
-                imageID = if (nextCandidate.pictures.isEmpty()) 0 else nextCandidate.pictures[currentImageIndex]
+                photoUri = if (nextCandidate.pictureUris.isEmpty()) "".toUri() else nextCandidate.pictureUris[currentImageIndex]
             )
         }
     }

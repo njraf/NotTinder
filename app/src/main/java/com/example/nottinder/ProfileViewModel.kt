@@ -13,23 +13,26 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ProfileState(
-    val self: User = User(0, "Nick", "", intListOf(R.drawable.pika1), emptyList<Uri>())
+    val self: User = User(0, "Nick", "", emptyList<Uri>())
 )
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(private val photoDataSource: PhotoDataSource, private val userDataSource: UserDataSource) : ViewModel() {
+class ProfileViewModel @Inject constructor(
+    //private val photoDataSource: PhotoDataSource,
+    private val userDataSource: UserDataSource
+) : ViewModel() {
     private var _state: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            photoDataSource.photos.collect { uriList ->
+            /*photoDataSource.photos.collect { uriList ->
                 _state.update { currentState ->
                     currentState.copy(
                         self = currentState.self.copy(pictureUris = uriList)
                     )
                 }
-            }
+            }*/
 
             userDataSource.users.collect { users ->
                 _state.update { currentState ->
@@ -53,7 +56,8 @@ class ProfileViewModel @Inject constructor(private val photoDataSource: PhotoDat
     }
 
     fun addPhoto(uri: Uri) {
-        photoDataSource.addPhoto(uri)
+        //photoDataSource.addPhoto(uri)
+        userDataSource.updatePhotos(state.value.self.id, state.value.self.pictureUris + uri)
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.nottinder
 
+import android.net.Uri
 import androidx.collection.intListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,9 +17,21 @@ class UserDataSource @Inject constructor() {
     fun updateBio(id: Int, newBio: String) {
         val userList = _users.value.toMutableList()
         if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, "Nick", newBio, intListOf(R.drawable.pika1), emptyList()))
+            userList.add(0, User(id, "Nick", newBio, emptyList()))
         } else {
             val targetUser: User = userList.find { it.id == id }!!.copy(biography = newBio)
+            val targetIndex = userList.indexOfFirst { it.id == id }
+            userList[targetIndex] = targetUser
+        }
+        _users.value = userList
+    }
+
+    fun updatePhotos(id: Int, photos: List<Uri>) {
+        val userList = _users.value.toMutableList()
+        if (id !in userList.map { it.id }) {
+            userList.add(0, User(id, "Nick", "", emptyList()))
+        } else {
+            val targetUser: User = userList.find { it.id == id }!!.copy(pictureUris = photos)
             val targetIndex = userList.indexOfFirst { it.id == id }
             userList[targetIndex] = targetUser
         }
