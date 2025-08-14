@@ -84,12 +84,18 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PhotoSelectorArea(photoUris, { uri ->
-                photoUris.add(uri)
-            })
+            PhotoSelectorArea(photoUris) { uri ->
+                if (uri !in photoUris) {
+                    photoUris.add(uri)
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Cannot add the same photo twice")
+                    }
+                }
+            }
 
             InputFields(state.self) { newName, newBio ->
-                if(newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
+                if (newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
                     scope.launch {
                         snackbarHostState.showSnackbar("Empty field or photo")
                     }
@@ -104,7 +110,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun InputFields(user: User,  onSubmit: (String, String) -> Unit) {
+fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
     var name by rememberSaveable { mutableStateOf(user.name) }
     var bio by rememberSaveable { mutableStateOf(user.biography) }
 
@@ -185,6 +191,10 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
             //.background(color = Color.Red)
             .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
             .clickable {
+                if (photoURI != null) {
+                    return@clickable
+                }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     (pickMedia as ActivityResultLauncher<PickVisualMediaRequest>)
                         .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -273,5 +283,5 @@ fun PreviewPhotoSelectorArea() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewInputFields() {
-    InputFields(User(-1, "", "", emptyList()), { s1, s2 -> })
+    InputFields(User(-1, "", "", emptyList())) { s1, s2 -> }
 }
