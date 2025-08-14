@@ -8,8 +8,10 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.util.Log
 import android.util.Size
+import android.widget.GridLayout
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -18,11 +20,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -47,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.io.IOException
 
 
 @Composable
@@ -82,19 +87,48 @@ fun ProfileScreen(
 fun InputFields(onSubmit: (String, String) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var bio by rememberSaveable { mutableStateOf("") }
-    Row {
-        Text("Name")
-        TextField(value = name, onValueChange = { name = it })
+
+    Column {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(5.dp)
+        ) {
+            val textModifier =
+                Modifier
+                    .fillMaxSize()
+                    .align(Alignment.CenterHorizontally)
+
+            item(span = { GridItemSpan(1) }) {
+                Text(
+                    "Name",
+                    fontSize = 20.sp,
+                    modifier = textModifier
+                )
+            }
+            item(span = { GridItemSpan(2) }) {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it })
+            }
+            item(span = { GridItemSpan(1) }) {
+                Text(
+                    "Bio",
+                    fontSize = 20.sp,
+                    modifier = textModifier
+                )
+            }
+            item(span = { GridItemSpan(2) }) {
+                TextField(
+                    value = bio,
+                    onValueChange = { bio = it })
+            }
+        }
+        Button(onClick = {
+            onSubmit(name, bio)
+            name = ""
+            bio = ""
+        }) { Text("Save") }
     }
-    Row {
-        Text("Bio")
-        TextField(value = bio, onValueChange = { bio = it })
-    }
-    Button(onClick = {
-        onSubmit(name, bio)
-        name = ""
-        bio = ""
-    }) { Text("Save") }
 }
 
 @Composable
@@ -134,7 +168,7 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
             .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
             .clickable {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    (pickMedia as androidx.activity.result.ActivityResultLauncher<PickVisualMediaRequest>)
+                    (pickMedia as ActivityResultLauncher<PickVisualMediaRequest>)
                         .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 } else {
                     legacyPickerLauncher?.launch("image/*")
@@ -150,7 +184,7 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
                     CancellationSignal()
                 )
 
-            } catch (e: java.io.IOException) {
+            } catch (e: IOException) {
                 Log.e("images", "Could not load profile image: ${e.message}")
                 null
             }
@@ -216,4 +250,10 @@ fun requestReadMediaPermission() {
 @Composable
 fun PreviewPhotoSelectorArea() {
     PhotoSelectorArea(emptyList(), {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewInputFields() {
+    InputFields({ s1, s2 -> })
 }
