@@ -36,6 +36,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun updateName(newName: String) {
+        userDataSource.updateName(state.value.self.id, newName)
+    }
+
     fun updateBio(newBio: String) {
         userDataSource.updateBio(state.value.self.id, newBio)
     }

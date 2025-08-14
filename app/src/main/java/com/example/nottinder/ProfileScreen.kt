@@ -18,6 +18,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -69,15 +70,31 @@ fun ProfileScreen(
                 //onProfileUpdated(state.self)
             })
 
-            var bio by rememberSaveable { mutableStateOf("") }
-            TextField(value = bio, onValueChange = { bio = it })
-            Button(onClick = {
-                viewModel.updateBio(bio)
-                //onProfileUpdated(state.self)
-                bio = ""
-            }) { Text("Submit") }
+            InputFields { newName, newBio ->
+                viewModel.updateName(newName)
+                viewModel.updateBio(newBio)
+            }
         }
     }
+}
+
+@Composable
+fun InputFields(onSubmit: (String, String) -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
+    var bio by rememberSaveable { mutableStateOf("") }
+    Row {
+        Text("Name")
+        TextField(value = name, onValueChange = { name = it })
+    }
+    Row {
+        Text("Bio")
+        TextField(value = bio, onValueChange = { bio = it })
+    }
+    Button(onClick = {
+        onSubmit(name, bio)
+        name = ""
+        bio = ""
+    }) { Text("Save") }
 }
 
 @Composable
@@ -138,7 +155,7 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
                 null
             }
 
-            if(thumbnail != null) {
+            if (thumbnail != null) {
                 Image(
                     BitmapPainter(thumbnail.asImageBitmap()),
                     contentDescription = "",
