@@ -31,14 +31,20 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import java.io.IOException
 
 
@@ -62,31 +69,44 @@ fun ProfileScreen(
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val photoUris = remember { state.self.pictureUris.toMutableStateList() }
+
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomBar(topPage, onBottomNavigate)
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PhotoSelectorArea(state.self.pictureUris, { uri ->
-                viewModel.addPhoto(uri)
-                //onProfileUpdated(state.self)
+            PhotoSelectorArea(photoUris, { uri ->
+                photoUris.add(uri)
             })
 
-            InputFields { newName, newBio ->
+            InputFields(state.self) { newName, newBio ->
+                if(newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Empty field or photo")
+                    }
+                    return@InputFields
+                }
                 viewModel.updateName(newName)
                 viewModel.updateBio(newBio)
+                viewModel.addPhotos(photoUris.toList())
             }
         }
     }
 }
 
 @Composable
-fun InputFields(onSubmit: (String, String) -> Unit) {
-    var name by rememberSaveable { mutableStateOf("") }
-    var bio by rememberSaveable { mutableStateOf("") }
+fun InputFields(user: User,  onSubmit: (String, String) -> Unit) {
+    var name by rememberSaveable { mutableStateOf(user.name) }
+    var bio by rememberSaveable { mutableStateOf(user.biography) }
 
     Column {
         LazyVerticalGrid(
@@ -125,8 +145,6 @@ fun InputFields(onSubmit: (String, String) -> Unit) {
         }
         Button(onClick = {
             onSubmit(name, bio)
-            name = ""
-            bio = ""
         }) { Text("Save") }
     }
 }
@@ -255,5 +273,5 @@ fun PreviewPhotoSelectorArea() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewInputFields() {
-    InputFields({ s1, s2 -> })
+    InputFields(User(-1, "", "", emptyList()), { s1, s2 -> })
 }

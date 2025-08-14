@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ProfileState(
-    val self: User = User(0, "Nick", "", emptyList<Uri>())
+    val self: User = User(0, "", "", emptyList<Uri>())
 )
 
 @HiltViewModel
@@ -46,6 +46,10 @@ class ProfileViewModel @Inject constructor(
 
     fun addPhoto(uri: Uri) {
         userDataSource.updatePhotos(state.value.self.id, state.value.self.pictureUris + uri)
+    }
+
+    fun addPhotos(uris: List<Uri>) {
+        userDataSource.updatePhotos(state.value.self.id, uris)
     }
 
 }
