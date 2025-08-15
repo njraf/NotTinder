@@ -48,7 +48,7 @@ class ProfileViewModel @Inject constructor(
         userDataSource.updatePhotos(state.value.self.id, state.value.self.pictureUris + uri)
     }
 
-    fun addPhotos(uris: List<Uri>) {
+    fun setPhotos(uris: List<Uri>) {
         userDataSource.updatePhotos(state.value.self.id, uris)
     }
 

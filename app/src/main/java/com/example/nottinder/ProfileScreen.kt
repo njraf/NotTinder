@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
+import android.text.Layout
 import android.util.Log
 import android.util.Size
 import android.widget.GridLayout
@@ -18,11 +19,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -52,6 +56,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,15 +89,20 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PhotoSelectorArea(photoUris) { uri ->
-                if (uri !in photoUris) {
-                    photoUris.add(uri)
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Cannot add the same photo twice")
+            PhotoSelectorArea(
+                photoUris,
+                { uri ->
+                    if (uri !in photoUris) {
+                        photoUris.add(uri)
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Cannot add the same photo twice")
+                        }
                     }
-                }
-            }
+                },
+                { uri ->
+                    photoUris.remove(uri)
+                })
 
             InputFields(state.self) { newName, newBio ->
                 if (newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
@@ -103,7 +113,7 @@ fun ProfileScreen(
                 }
                 viewModel.updateName(newName)
                 viewModel.updateBio(newBio)
-                viewModel.addPhotos(photoUris.toList())
+                viewModel.setPhotos(photoUris.toList())
             }
         }
     }
@@ -114,7 +124,7 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
     var name by rememberSaveable { mutableStateOf(user.name) }
     var bio by rememberSaveable { mutableStateOf(user.biography) }
 
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(5.dp)
@@ -149,14 +159,21 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
                     onValueChange = { bio = it })
             }
         }
-        Button(onClick = {
-            onSubmit(name, bio)
-        }) { Text("Save") }
+
+        Spacer(Modifier.weight(1f))
+
+        Button(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .fillMaxWidth(0.8f),
+            onClick = {
+                onSubmit(name, bio)
+            }) { Text("Save") }
     }
 }
 
 @Composable
-fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
+fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (Uri) -> Unit) {
 
     var pickMedia: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>? = null
     var legacyPickerLauncher: ManagedActivityResultLauncher<String, Uri?>? = null
@@ -190,20 +207,26 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
             .padding(1.dp)
             //.background(color = Color.Red)
             .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
-            .clickable {
-                if (photoURI != null) {
-                    return@clickable
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    (pickMedia as ActivityResultLauncher<PickVisualMediaRequest>)
-                        .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                } else {
-                    legacyPickerLauncher?.launch("image/*")
-                }
-            }) {
+    ) {
         if (photoURI == null) {
-            Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            (pickMedia as ActivityResultLauncher<PickVisualMediaRequest>)
+                                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        } else {
+                            legacyPickerLauncher?.launch("image/*")
+                        }
+                    }) {
+                Text(
+                    "+",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.Center), fontSize = 30.sp
+                )
+            }
         } else {
             val contentResolver = LocalContext.current.contentResolver
             val thumbnail: Bitmap? = try {
@@ -218,6 +241,20 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
             }
 
             if (thumbnail != null) {
+                Text(
+                    text = "  -  ",
+                    fontSize = 30.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .border(
+                            width = 2.dp,
+                            color = Color.Black,
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .clickable {
+                            onPhotoDeleted(photoURI)
+                        }
+                )
                 Image(
                     BitmapPainter(thumbnail.asImageBitmap()),
                     contentDescription = "",
@@ -225,20 +262,28 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (self: Uri) -> Unit) {
                     contentScale = ContentScale.Fit
                 )
             } else {
-                Text("+", modifier = Modifier.align(Alignment.Center), fontSize = 30.sp)
+                Text(
+                    "+", modifier = Modifier
+                        .align(Alignment.Center),
+                    fontSize = 30.sp
+                )
             }
         }
     }
 }
 
 @Composable
-fun PhotoSelectorArea(photoURIs: List<Uri>, onPhotoAdded: (self: Uri) -> Unit) {
+fun PhotoSelectorArea(
+    photoURIs: List<Uri>,
+    onPhotoAdded: (Uri) -> Unit,
+    onPhotoDeleted: (Uri) -> Unit
+) {
     requestReadMediaPermission()
 
     LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(6) { idx ->
             val uri: Uri? = if (photoURIs.size > idx) photoURIs[idx] else null
-            PhotoSelector(uri, onPhotoAdded)
+            PhotoSelector(uri, onPhotoAdded, onPhotoDeleted)
         }
     }
 }
@@ -277,7 +322,7 @@ fun requestReadMediaPermission() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewPhotoSelectorArea() {
-    PhotoSelectorArea(emptyList(), {})
+    PhotoSelectorArea(emptyList(), {}, {})
 }
 
 @Preview(showBackground = true)
