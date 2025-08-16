@@ -119,25 +119,16 @@ fun ProfileCard(
 
 @Composable
 fun UserImage(uri: Uri, onImageClick: (Boolean) -> Unit) {
-    val contentResolver = LocalContext.current.contentResolver
-    val thumbnail: Bitmap? = try {
-        contentResolver.loadThumbnail(
-            uri, Size(10, 10),
-            CancellationSignal()
-        )
+    val photoBitmap: Bitmap? = uriToBitmap(LocalContext.current, uri)
 
-    } catch (e: java.io.IOException) {
-        Log.e("images", "Could not load profile image: ${e.message}")
-        null
-    }
-
-    if (thumbnail != null) {
+    if (photoBitmap != null) {
         var imageWidth by remember { mutableIntStateOf(0) }
         Image(
-            painter = BitmapPainter(thumbnail.asImageBitmap()),
+            painter = BitmapPainter(photoBitmap.asImageBitmap()),
             contentDescription = "",
             contentScale = ContentScale.Fit,
             modifier = Modifier
+                .fillMaxSize()
                 .onGloballyPositioned {
                     imageWidth = it.size.width
                 }
@@ -154,7 +145,6 @@ fun UserImage(uri: Uri, onImageClick: (Boolean) -> Unit) {
                         }
                     )
                 }
-                .fillMaxSize()
         )
     } else {
         Text("ERROR: Could not load image")

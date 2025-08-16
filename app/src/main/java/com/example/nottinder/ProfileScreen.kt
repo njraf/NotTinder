@@ -3,6 +3,7 @@ package com.example.nottinder
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
@@ -228,19 +229,9 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                 )
             }
         } else {
-            val contentResolver = LocalContext.current.contentResolver
-            val thumbnail: Bitmap? = try {
-                contentResolver.loadThumbnail(
-                    photoURI, Size(10, 10),
-                    CancellationSignal()
-                )
+            val photoBitmap: Bitmap? = uriToBitmap(LocalContext.current, photoURI)
 
-            } catch (e: IOException) {
-                Log.e("images", "Could not load profile image: ${e.message}")
-                null
-            }
-
-            if (thumbnail != null) {
+            if (photoBitmap != null) {
                 Text(
                     text = "  -  ",
                     fontSize = 30.sp,
@@ -256,7 +247,7 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                         }
                 )
                 Image(
-                    BitmapPainter(thumbnail.asImageBitmap()),
+                    BitmapPainter(photoBitmap.asImageBitmap()),
                     contentDescription = "",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
