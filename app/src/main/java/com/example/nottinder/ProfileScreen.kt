@@ -150,7 +150,8 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
             item(span = { GridItemSpan(2) }) {
                 TextField(
                     value = name,
-                    onValueChange = { name = it })
+                    onValueChange = { name = it },
+                    singleLine = true)
             }
             item(span = { GridItemSpan(1) }) {
                 Text(
@@ -162,7 +163,8 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
             item(span = { GridItemSpan(2) }) {
                 TextField(
                     value = bio,
-                    onValueChange = { bio = it })
+                    onValueChange = { bio = it },
+                    singleLine = true)
             }
         }
 

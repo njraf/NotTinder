@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
@@ -181,17 +182,20 @@ fun BioAndButtons(
                 .background(Color.Transparent),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            val buttonWidth = 100.dp
             val buttonsEnabled = user.name != ""
             Button(
                 enabled = buttonsEnabled,
-                onClick = onYes
+                onClick = onYes,
+                modifier = Modifier.width(buttonWidth)
             ) {
                 Text("Like")
             }
 
             Button(
                 enabled = buttonsEnabled,
-                onClick = onNo
+                onClick = onNo,
+                modifier = Modifier.width(buttonWidth)
             ) {
                 Text("Dislike")
             }
