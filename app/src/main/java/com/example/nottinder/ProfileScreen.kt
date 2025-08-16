@@ -66,6 +66,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+fun Modifier.roundedBorder(): Modifier = this.border(
+    width = 2.dp,
+    color = Color.Black,
+    shape = RoundedCornerShape(15.dp)
+)
 
 @Composable
 fun ProfileScreen(
@@ -202,17 +207,18 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
         }
     }
 
-    Box(
+
+
+    Box( // rounded rect with plus
         modifier = Modifier
             .height(200.dp)
-            .padding(1.dp)
-            //.background(color = Color.Red)
-            .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(15.dp))
+            .padding(2.dp)
     ) {
         if (photoURI == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .roundedBorder()
                     .clickable {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             (pickMedia as ActivityResultLauncher<PickVisualMediaRequest>)
@@ -220,7 +226,8 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                         } else {
                             legacyPickerLauncher?.launch("image/*")
                         }
-                    }) {
+                    }
+            ) {
                 Text(
                     "+",
                     textAlign = TextAlign.Center,
@@ -232,30 +239,33 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
             val photoBitmap: Bitmap? = uriToBitmap(LocalContext.current, photoURI)
 
             if (photoBitmap != null) {
-                Text(
-                    text = "  -  ",
-                    fontSize = 30.sp,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .border(
-                            width = 2.dp,
-                            color = Color.Black,
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .clickable {
-                            onPhotoDeleted(photoURI)
-                        }
-                )
-                Image(
-                    BitmapPainter(photoBitmap.asImageBitmap()),
-                    contentDescription = "",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                Box {
+                    Image(
+                        BitmapPainter(photoBitmap.asImageBitmap()),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Text(
+                        text = "  -  ",
+                        fontSize = 30.sp,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .border(
+                                width = 2.dp,
+                                color = Color.Black,
+                                shape = RoundedCornerShape(20.dp))
+                            .clickable {
+                                onPhotoDeleted(photoURI)
+                            }
+                    )
+                }
             } else {
                 Text(
                     "+", modifier = Modifier
-                        .align(Alignment.Center),
+                    .align(Alignment.Center),
                     fontSize = 30.sp
                 )
             }
@@ -269,43 +279,10 @@ fun PhotoSelectorArea(
     onPhotoAdded: (Uri) -> Unit,
     onPhotoDeleted: (Uri) -> Unit
 ) {
-    requestReadMediaPermission()
-
     LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(6) { idx ->
             val uri: Uri? = if (photoURIs.size > idx) photoURIs[idx] else null
             PhotoSelector(uri, onPhotoAdded, onPhotoDeleted)
-        }
-    }
-}
-
-@Composable
-fun requestReadMediaPermission() {
-    val permissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-
-            } else {
-
-            }
-        }
-
-    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Manifest.permission.READ_MEDIA_IMAGES
-    } else {
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    }
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        when (ContextCompat.checkSelfPermission(context, permission)) {
-            PackageManager.PERMISSION_GRANTED -> {
-                //onPermissionGranted()
-            }
-
-            else -> {
-                permissionLauncher.launch(permission)
-            }
         }
     }
 }
