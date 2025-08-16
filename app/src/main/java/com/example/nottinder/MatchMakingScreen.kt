@@ -9,6 +9,7 @@ import androidx.collection.emptyIntList
 import androidx.collection.intListOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,13 +58,14 @@ fun MatchMakingScreen(
             BottomBar(topPage, onBottomNavigate)
         }
     ) { innerPadding ->
-            ProfileCard(
-                user = state.currentCandidate,
-                uri = state.photoUri,
-                onYes = { viewModel.nextCandidate() },
-                onNo = { viewModel.nextCandidate() },
-                onImageClick = { viewModel.changeImage(it) },
-                modifier = Modifier.padding(innerPadding))
+        ProfileCard(
+            user = state.currentCandidate,
+            uri = state.photoUri,
+            onYes = { viewModel.nextCandidate() },
+            onNo = { viewModel.nextCandidate() },
+            onImageClick = { viewModel.changeImage(it) },
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 
@@ -84,12 +86,16 @@ fun ProfileCard(
             .fillMaxSize()
             .padding(10.dp)
     ) {
-        if (/*user.pictures.isNotEmpty() && */user.name.isNotEmpty()) {
+        if (/*user.pictureUris.isNotEmpty() && */user.name.isNotEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (user.pictureUris.isNotEmpty()) {
                     UserImage(uri, onImageClick)
                 } else {
-                    Text(text = "No photos found", modifier = Modifier.align(Alignment.Center))
+                    Text(
+                        text = "No photos found",
+                        fontSize = 30.sp,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
 
                 BioAndButtons(
@@ -100,7 +106,13 @@ fun ProfileCard(
                 )
             }
         } else {
-            Text(text = "No user found", modifier = Modifier.align(Alignment.CenterHorizontally))
+            Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = "No user found",
+                    fontSize = 30.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
         }
     }
 }
@@ -164,7 +176,12 @@ fun BioAndButtons(
 
         Text(text = user.biography)
 
-        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             val buttonsEnabled = user.name != ""
             Button(
                 enabled = buttonsEnabled,
@@ -172,7 +189,7 @@ fun BioAndButtons(
             ) {
                 Text("Like")
             }
-            Spacer(modifier = Modifier.padding(horizontal = 100.dp))
+
             Button(
                 enabled = buttonsEnabled,
                 onClick = onNo
