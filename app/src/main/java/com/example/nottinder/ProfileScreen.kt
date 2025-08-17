@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -89,7 +90,7 @@ fun ProfileScreen(
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val photoUris = remember { state.self.pictureUris.toMutableStateList() }
+    val photoUris = rememberSaveable { state.self.pictureUris.toMutableStateList() }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -272,16 +273,19 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                             .clip(shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius))),
                         contentScale = ContentScale.Crop
                     )
+
                     Text(
                         text = "  -  ",
                         fontSize = 30.sp,
                         color = Color.Red,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
+                            .clip(CircleShape)
+                            .background(Color.White)
                             .border(
                                 width = 2.dp,
                                 color = Color.Black,
-                                shape = RoundedCornerShape(20.dp)
+                                shape = CircleShape
                             )
                             .clickable {
                                 onPhotoDeleted(photoURI)
