@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawStyle
@@ -41,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -115,7 +118,7 @@ fun ProfileCard(
         } else {
             Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(
-                    text = "No user found",
+                    text = "No users found",
                     fontSize = 30.sp,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
@@ -136,6 +139,7 @@ fun UserImage(uri: Uri, onImageClick: (Boolean) -> Unit) {
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
+                .clip(shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius)))
                 .onGloballyPositioned {
                     imageWidth = it.size.width
                 }

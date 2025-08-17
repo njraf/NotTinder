@@ -34,6 +34,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -52,11 +54,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,10 +74,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+@Composable
 fun Modifier.roundedBorder(): Modifier = this.border(
     width = 2.dp,
     color = Color.Black,
-    shape = RoundedCornerShape(15.dp)
+    shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius))
 )
 
 @Composable
@@ -131,6 +140,7 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
     var bio by rememberSaveable { mutableStateOf(user.biography) }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        val focusManager = LocalFocusManager.current
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(5.dp)
@@ -151,7 +161,14 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    singleLine = true)
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
+                )
             }
             item(span = { GridItemSpan(1) }) {
                 Text(
@@ -164,7 +181,14 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
                 TextField(
                     value = bio,
                     onValueChange = { bio = it },
-                    singleLine = true)
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.clearFocus() }
+                    )
+                )
             }
         }
 
@@ -209,8 +233,6 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
         }
     }
 
-
-
     Box( // rounded rect with plus
         modifier = Modifier
             .height(200.dp)
@@ -246,7 +268,8 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                         BitmapPainter(photoBitmap.asImageBitmap()),
                         contentDescription = "",
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .clip(shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius))),
                         contentScale = ContentScale.Crop
                     )
                     Text(
@@ -258,7 +281,8 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
                             .border(
                                 width = 2.dp,
                                 color = Color.Black,
-                                shape = RoundedCornerShape(20.dp))
+                                shape = RoundedCornerShape(20.dp)
+                            )
                             .clickable {
                                 onPhotoDeleted(photoURI)
                             }
@@ -267,7 +291,7 @@ fun PhotoSelector(photoURI: Uri?, onPhotoAdded: (Uri) -> Unit, onPhotoDeleted: (
             } else {
                 Text(
                     "+", modifier = Modifier
-                    .align(Alignment.Center),
+                        .align(Alignment.Center),
                     fontSize = 30.sp
                 )
             }
