@@ -86,7 +86,8 @@ fun Modifier.roundedBorder(): Modifier = this.border(
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     topPage: Route,
-    onBottomNavigate: (Route) -> Unit
+    onBottomNavigate: (Route) -> Unit,
+    onProfileSaved: () -> Unit
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -120,23 +121,24 @@ fun ProfileScreen(
                     photoUris.remove(uri)
                 })
 
-            InputFields(state.self) { newName, newBio ->
+            InputFields(state.self, onProfileSaved) { newName, newBio ->
                 if (newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
                     scope.launch {
                         snackbarHostState.showSnackbar("Empty field or photo")
                     }
-                    return@InputFields
+                    return@InputFields false
                 }
                 viewModel.updateName(newName)
                 viewModel.updateBio(newBio)
                 viewModel.setPhotos(photoUris.toList())
+                return@InputFields true
             }
         }
     }
 }
 
 @Composable
-fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
+fun InputFields(user: User, onProfileSaved: () -> Unit, onSubmit: (String, String) -> Boolean) {
     var name by rememberSaveable { mutableStateOf(user.name) }
     var bio by rememberSaveable { mutableStateOf(user.biography) }
 
@@ -200,7 +202,9 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.8f),
             onClick = {
-                onSubmit(name, bio)
+                if(onSubmit(name, bio)) {
+                    onProfileSaved()
+                }
             }) { Text("Save") }
     }
 }
@@ -326,5 +330,5 @@ fun PreviewPhotoSelectorArea() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewInputFields() {
-    InputFields(User(-1, "", "", emptyList())) { s1, s2 -> }
+    InputFields(User(-1, "", "", emptyList()), {}) { s1, s2 -> false}
 }

@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
                         is Route.Login -> NavEntry(route) {
                             LoginScreen(
                                 onLoginVerified = { backstackKey = Route.Candidates },
-                                onCreateProfileClicked = { backstackKey = Route.Profile })
+                                onCreateProfileClicked = { currentBackStack.add(Route.Profile) })
                         }
 
                         is Route.Candidates -> NavEntry(route) {
@@ -103,7 +103,15 @@ class MainActivity : ComponentActivity() {
                         }
 
                         is Route.Profile -> NavEntry(route) {
-                            ProfileScreen(profileViewModel, backstackKey, changeBackstack)
+                            ProfileScreen(
+                                profileViewModel,
+                                backstackKey,
+                                changeBackstack,
+                                onProfileSaved = {
+                                    if (currentBackStack.first() == Route.Login) {
+                                        backstackKey = Route.Candidates
+                                    }
+                                })
                         }
 
                         is Route.Settings -> NavEntry(route) {
