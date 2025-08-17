@@ -46,6 +46,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Route : NavKey {
     @Serializable
+    data object Login : Route
+
+    @Serializable
     data object Candidates : Route
 
     @Serializable
@@ -65,16 +68,18 @@ class MainActivity : ComponentActivity() {
                 val matchMakingViewModel: MatchMakingViewModel = hiltViewModel()
                 val profileViewModel: ProfileViewModel = hiltViewModel()
 
+                val loginBackstack = rememberNavBackStack(Route.Login)
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)
                 val settingsBackstack = rememberNavBackStack(Route.Settings)
 
-                var backstackKey: Route by remember { mutableStateOf(Route.Candidates) }
+                var backstackKey: Route by remember { mutableStateOf(Route.Login) }
                 val currentBackStack = when (backstackKey) {
+                    Route.Login -> loginBackstack
                     Route.Candidates -> candidatesBackstack
                     Route.Profile -> profileBackstack
                     Route.Settings -> settingsBackstack
-                    else -> candidatesBackstack
+                    else -> loginBackstack
                 }
 
                 val changeBackstack: (Route) -> Unit = { route ->
@@ -87,8 +92,14 @@ class MainActivity : ComponentActivity() {
                     backStack = currentBackStack,
                     onBack = { currentBackStack.removeLastOrNull() }) { route ->
                     when (route) {
+                        is Route.Login -> NavEntry(route) {
+                            LoginScreen(
+                                onLoginVerified = { backstackKey = Route.Candidates },
+                                onCreateProfileClicked = { backstackKey = Route.Profile })
+                        }
+
                         is Route.Candidates -> NavEntry(route) {
-                            MatchMakingScreen(matchMakingViewModel,  backstackKey, changeBackstack)
+                            MatchMakingScreen(matchMakingViewModel, backstackKey, changeBackstack)
                         }
 
                         is Route.Profile -> NavEntry(route) {
