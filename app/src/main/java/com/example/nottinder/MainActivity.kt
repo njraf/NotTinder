@@ -109,6 +109,7 @@ class MainActivity : ComponentActivity() {
                                 changeBackstack,
                                 onProfileSaved = {
                                     if (currentBackStack.first() == Route.Login) {
+                                        currentBackStack.removeRange(1, currentBackStack.size)
                                         backstackKey = Route.Candidates
                                     }
                                 })

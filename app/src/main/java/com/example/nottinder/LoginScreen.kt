@@ -1,6 +1,5 @@
 package com.example.nottinder
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,11 +33,14 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val commonPadding = 20.dp
+            val titleSize = 70.sp
             Text(
                 text = "Not\nTinder",
-                fontSize = 70.sp,
+                fontSize = titleSize,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(commonPadding)
+                lineHeight = titleSize,
+                modifier = Modifier
+                    .padding(commonPadding)
             )
 
             Spacer(Modifier.weight(1f))
@@ -51,7 +53,7 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
                 modifier = Modifier.padding(commonPadding)
             )
 
-            val buttonWidth = 145.dp
+            val buttonWidth = 150.dp
             Button(
                 onClick = { /*viewModel.verifyUser(username)*/ },
                 modifier = Modifier.width(buttonWidth)
@@ -60,7 +62,7 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
             }
 
             Button(onClick = onCreateProfileClicked, modifier = Modifier.width(buttonWidth)) {
-                Text(text = "Create Account")
+                Text(text = "Create Account", textAlign = TextAlign.Center)
             }
 
             Spacer(Modifier.weight(1f))
