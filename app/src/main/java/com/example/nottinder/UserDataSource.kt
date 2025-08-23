@@ -50,4 +50,7 @@ class UserDataSource @Inject constructor() {
         _users.value = userList
     }
 
+    fun verifyUser(username: String): Boolean {
+        return users.value.map { it.name }.contains(username)
+    }
 }

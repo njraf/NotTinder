@@ -73,6 +73,13 @@ class MainActivity : ComponentActivity() {
                 val profileBackstack = rememberNavBackStack(Route.Profile)
                 val settingsBackstack = rememberNavBackStack(Route.Settings)
 
+                val allBackstacks = listOf(
+                    loginBackstack,
+                    candidatesBackstack,
+                    profileBackstack,
+                    settingsBackstack
+                )
+
                 var backstackKey: Route by remember { mutableStateOf(Route.Login) }
                 val currentBackStack = when (backstackKey) {
                     Route.Login -> loginBackstack
@@ -116,7 +123,13 @@ class MainActivity : ComponentActivity() {
                         }
 
                         is Route.Settings -> NavEntry(route) {
-                            SettingsScreen(backstackKey, changeBackstack)
+                            SettingsScreen(
+                                backstackKey,
+                                changeBackstack,
+                                onLogout = {
+                                    allBackstacks.forEach { it.removeRange(1, it.size) }
+                                    backstackKey = Route.Login
+                                })
                         }
 
                         else -> NavEntry(route) { Text("Unknown Page") }

@@ -4,4 +4,9 @@ import android.net.Uri
 import androidx.collection.IntList
 import androidx.collection.emptyIntList
 
-data class User(val id: Int, val name: String, val biography: String, val pictureUris: List<Uri>)
+data class User(
+    val id: Int,
+    val name: String,
+    val biography: String,
+    val pictureUris: List<Uri>
+)

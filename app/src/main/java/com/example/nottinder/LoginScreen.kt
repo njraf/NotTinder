@@ -24,7 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit) {
-    //val viewModel: LoginViewModel = hiltViewModel()
+    val viewModel: LoginViewModel = hiltViewModel()
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -55,7 +55,11 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
 
             val buttonWidth = 150.dp
             Button(
-                onClick = { /*viewModel.verifyUser(username)*/ },
+                onClick = {
+                    if(viewModel.verifyUser(username)) {
+                        onLoginVerified()
+                    }
+                },
                 modifier = Modifier.width(buttonWidth)
             ) {
                 Text(text = "Login")
