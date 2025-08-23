@@ -2,6 +2,7 @@ package com.example.nottinder
 
 import android.net.Uri
 import androidx.collection.intListOf
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,9 +12,15 @@ import javax.inject.Singleton
 @Singleton
 class UserDataSource @Inject constructor() {
 
-    private val _users: MutableStateFlow<List<User>> = MutableStateFlow(emptyList())
-    val users: StateFlow<List<User>> = _users.asStateFlow()
+    val nullCandidate = User(-1, "", "", emptyList())
 
+    // mock database. do not delete.
+    private val _users: MutableStateFlow<List<User>> = MutableStateFlow(emptyList())
+    fun getUsers(): Flow<List<User>> = _users.asStateFlow()
+
+    private var _self: MutableStateFlow<User?> = MutableStateFlow(null)
+    fun getSelf(): Flow<User?> = _self.asStateFlow()
+/*
     fun updateName(id: Int, newName: String) {
         val userList = _users.value.toMutableList()
         if (id !in userList.map { it.id }) {
@@ -48,9 +55,21 @@ class UserDataSource @Inject constructor() {
             userList[targetIndex] = targetUser
         }
         _users.value = userList
-    }
+    }*/
 
     fun verifyUser(username: String): Boolean {
-        return users.value.map { it.name }.contains(username)
+        return _users.value.map { it.name }.contains(username)
+    }
+
+    fun updateSelf(newSelf: User) {
+        val mutableUsers = _users.value.toMutableList()
+        mutableUsers.remove(_self.value)
+        mutableUsers.add(0, newSelf)
+        _self.value = newSelf
+        _users.value = mutableUsers
+    }
+
+    fun resetData() {
+        _self.value = null
     }
 }

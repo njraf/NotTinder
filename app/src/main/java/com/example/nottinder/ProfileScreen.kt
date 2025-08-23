@@ -84,7 +84,7 @@ fun ProfileScreen(
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val photoUris = rememberSaveable { state.self.pictureUris.toMutableStateList() }
+    val photoUris = rememberSaveable { state.self.pictureUris.toMutableStateList() } //TODO: move to viewModel
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -123,9 +123,10 @@ fun ProfileScreen(
                     }
                     return@InputFields false
                 }
-                viewModel.updateName(newName)
+                /*viewModel.updateName(newName)
                 viewModel.updateBio(newBio)
-                viewModel.setPhotos(photoUris.toList())
+                viewModel.setPhotos(photoUris.toList())*/
+                viewModel.updateUser(User(id = state.self.id, name = newName, biography = newBio, pictureUris = photoUris))
                 return@InputFields true
             }
         }

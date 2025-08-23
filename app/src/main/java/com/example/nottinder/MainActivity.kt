@@ -42,6 +42,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.nottinder.ui.theme.NotTinderTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
 @Serializable
 sealed interface Route : NavKey {

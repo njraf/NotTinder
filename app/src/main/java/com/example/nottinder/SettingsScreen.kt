@@ -19,7 +19,10 @@ fun SettingsScreen(topPage: Route, onBottomNavigate: (Route) -> Unit, onLogout: 
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Text("Settings screen")
-            Button(onClick = onLogout) {
+            Button(onClick = {
+                //viewModel.logout() // call UserDataSource.resetData()
+                onLogout()
+            }) {
                 Text(text = "Log Out")
             }
         }

@@ -26,17 +26,17 @@ class ProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            userDataSource.users.collect { users ->
+            userDataSource.getSelf().collect { self ->
                 _state.update { currentState ->
-                    val self: User = users.find { it.id == currentState.self.id } ?: return@collect
                     currentState.copy(
-                        self = self
+                        self = self ?: userDataSource.nullCandidate
                     )
                 }
             }
         }
     }
 
+    /*
     fun updateName(newName: String) {
         userDataSource.updateName(state.value.self.id, newName)
     }
@@ -52,5 +52,8 @@ class ProfileViewModel @Inject constructor(
     fun setPhotos(uris: List<Uri>) {
         userDataSource.updatePhotos(state.value.self.id, uris)
     }
-
+*/
+    fun updateUser(user: User) {
+        userDataSource.updateSelf(user)
+    }
 }
