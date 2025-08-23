@@ -9,4 +9,7 @@ class LoginViewModel @Inject constructor(private val userDataSource: UserDataSou
 
     fun verifyUser(username: String): Boolean = userDataSource.verifyUser(username)
 
+    fun setCurrentUser(username: String) {
+        userDataSource.setCurrentUser(username)
+    }
 }

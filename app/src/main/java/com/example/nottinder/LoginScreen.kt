@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,10 +24,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit) {
     val viewModel: LoginViewModel = hiltViewModel()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -57,8 +65,15 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
             val buttonWidth = 150.dp
             Button(
                 onClick = {
-                    if(viewModel.verifyUser(username)) {
+                    if (username.isEmpty()) {
+                        return@Button
+                    } else if (viewModel.verifyUser(username)) {
+                        viewModel.setCurrentUser(username)
                         onLoginVerified()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("User does not exist")
+                        }
                     }
                 },
                 modifier = Modifier.width(buttonWidth)

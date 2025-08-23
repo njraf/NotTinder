@@ -20,6 +20,7 @@ class UserDataSource @Inject constructor() {
 
     private var _self: MutableStateFlow<User?> = MutableStateFlow(null)
     fun getSelf(): Flow<User?> = _self.asStateFlow()
+
 /*
     fun updateName(id: Int, newName: String) {
         val userList = _users.value.toMutableList()
@@ -71,5 +72,10 @@ class UserDataSource @Inject constructor() {
 
     fun resetData() {
         _self.value = null
+    }
+
+    fun setCurrentUser(username: String) {
+        val currentUser = _users.value.find { it.name == username } ?: return
+        updateSelf(currentUser)
     }
 }
