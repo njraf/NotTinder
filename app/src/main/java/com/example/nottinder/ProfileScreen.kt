@@ -76,13 +76,6 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 @Composable
-fun Modifier.roundedBorder(): Modifier = this.border(
-    width = 2.dp,
-    color = Color.Black,
-    shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius))
-)
-
-@Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     topPage: Route,
