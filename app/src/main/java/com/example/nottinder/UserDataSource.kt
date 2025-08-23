@@ -64,7 +64,7 @@ class UserDataSource @Inject constructor() {
 
     fun updateSelf(newSelf: User) {
         val mutableUsers = _users.value.toMutableList()
-        mutableUsers.remove(_self.value)
+        mutableUsers.remove(newSelf)
         mutableUsers.add(0, newSelf)
         _self.value = newSelf
         _users.value = mutableUsers

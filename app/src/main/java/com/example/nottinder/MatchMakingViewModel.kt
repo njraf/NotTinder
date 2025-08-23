@@ -27,8 +27,7 @@ class MatchMakingViewModel @Inject constructor(
     private var currentImageIndex = 0
 
     private var _state: MutableStateFlow<MatchMakingState> = MutableStateFlow(MatchMakingState())
-    var state: StateFlow<MatchMakingState> = _state.asStateFlow()
-
+    val state: StateFlow<MatchMakingState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -38,7 +37,7 @@ class MatchMakingViewModel @Inject constructor(
                 candidates = users.toMutableList()
                 _state.update { currentState ->
                     currentState.copy(
-                        currentCandidate = users.firstOrNull() ?: userDataSource.nullCandidate,
+                        currentCandidate = candidates.firstOrNull() ?: userDataSource.nullCandidate,
                         photoUri = users.firstOrNull()?.pictureUris[0] ?: "".toUri()
                     )
                 }
