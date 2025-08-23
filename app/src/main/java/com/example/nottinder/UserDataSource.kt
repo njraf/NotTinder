@@ -29,7 +29,7 @@ class UserDataSource @Inject constructor() {
     fun updateBio(id: Int, newBio: String) {
         val userList = _users.value.toMutableList()
         if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, "Nick", newBio, emptyList()))
+            userList.add(0, User(id, "", newBio, emptyList()))
         } else {
             val targetUser: User = userList.find { it.id == id }!!.copy(biography = newBio)
             val targetIndex = userList.indexOfFirst { it.id == id }

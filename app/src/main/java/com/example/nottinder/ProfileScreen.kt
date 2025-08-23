@@ -94,8 +94,10 @@ fun ProfileScreen(
             SnackbarHost(hostState = snackbarHostState)
         },
         modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            BottomBar(topPage, onBottomNavigate)
+        bottomBar = { //TODO: change creatingAccount in a data source when creating an account
+            if (!state.creatingAccount) {
+                BottomBar(topPage, onBottomNavigate)
+            }
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
@@ -195,7 +197,7 @@ fun InputFields(user: User, onProfileSaved: () -> Unit, onSubmit: (String, Strin
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.8f),
             onClick = {
-                if(onSubmit(name, bio)) {
+                if (onSubmit(name, bio)) {
                     onProfileSaved()
                 }
             }) { Text("Save") }
@@ -323,5 +325,5 @@ fun PreviewPhotoSelectorArea() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewInputFields() {
-    InputFields(User(-1, "", "", emptyList()), {}) { s1, s2 -> false}
+    InputFields(User(-1, "", "", emptyList()), {}) { s1, s2 -> false }
 }

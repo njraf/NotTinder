@@ -50,6 +50,7 @@ fun LoginScreen(onLoginVerified: () -> Unit, onCreateProfileClicked: () -> Unit)
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Name") },
+                singleLine = true,
                 modifier = Modifier.padding(commonPadding)
             )
 
