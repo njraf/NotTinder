@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ProfileState(
-    val self: User = User(0, "", "", emptyList<Uri>()),
+    val self: User = User(-1, "", "", emptyList<Uri>()),
     val creatingAccount: Boolean = false
 )
 

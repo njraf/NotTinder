@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MatchMakingState(
-    val currentCandidate: User = User(0, "", "", emptyList()),
+    val currentCandidate: User = User(-1, "", "", emptyList()),
     val photoUri: Uri = "".toUri()
 )
 

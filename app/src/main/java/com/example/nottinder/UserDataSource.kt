@@ -21,52 +21,20 @@ class UserDataSource @Inject constructor() {
     private var _self: MutableStateFlow<User?> = MutableStateFlow(null)
     fun getSelf(): Flow<User?> = _self.asStateFlow()
 
-/*
-    fun updateName(id: Int, newName: String) {
-        val userList = _users.value.toMutableList()
-        if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, newName, "", emptyList()))
-        } else {
-            val targetUser: User = userList.find { it.id == id }!!.copy(name = newName)
-            val targetIndex = userList.indexOfFirst { it.id == id }
-            userList[targetIndex] = targetUser
-        }
-        _users.value = userList
-    }
-
-    fun updateBio(id: Int, newBio: String) {
-        val userList = _users.value.toMutableList()
-        if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, "", newBio, emptyList()))
-        } else {
-            val targetUser: User = userList.find { it.id == id }!!.copy(biography = newBio)
-            val targetIndex = userList.indexOfFirst { it.id == id }
-            userList[targetIndex] = targetUser
-        }
-        _users.value = userList
-    }
-
-    fun updatePhotos(id: Int, photos: List<Uri>) {
-        val userList = _users.value.toMutableList()
-        if (id !in userList.map { it.id }) {
-            userList.add(0, User(id, "Nick", "", photos))
-        } else {
-            val targetUser: User = userList.find { it.id == id }!!.copy(pictureUris = photos)
-            val targetIndex = userList.indexOfFirst { it.id == id }
-            userList[targetIndex] = targetUser
-        }
-        _users.value = userList
-    }*/
-
     fun verifyUser(username: String): Boolean {
         return _users.value.map { it.name }.contains(username)
     }
 
     fun updateSelf(newSelf: User) {
         val mutableUsers = _users.value.toMutableList()
-        mutableUsers.remove(newSelf)
-        mutableUsers.add(0, newSelf)
-        _self.value = newSelf
+        val newSelfCopy =
+            newSelf.copy(
+                id = if (newSelf.id == -1)
+                    (_users.value.maxOfOrNull { it.id } ?: -1) + 1
+                else newSelf.id)
+        mutableUsers.remove(newSelfCopy)
+        mutableUsers.add(0, newSelfCopy)
+        _self.value = newSelfCopy
         _users.value = mutableUsers
     }
 
