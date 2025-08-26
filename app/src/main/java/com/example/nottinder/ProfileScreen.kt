@@ -94,7 +94,7 @@ fun ProfileScreen(
             SnackbarHost(hostState = snackbarHostState)
         },
         modifier = Modifier.fillMaxSize(),
-        bottomBar = { //TODO: change creatingAccount in a data source when creating an account
+        bottomBar = {
             if (!creatingAccount) {
                 BottomBar(topPage, onBottomNavigate)
             }
@@ -114,7 +114,6 @@ fun ProfileScreen(
                 },
                 { uri ->
                     viewModel.removeTemporaryPhoto(uri)
-                    TODO("need to delete uri from temp or real photos")
                 })
 
             InputFields(state.self, onProfileSaved) { newName, newBio ->
