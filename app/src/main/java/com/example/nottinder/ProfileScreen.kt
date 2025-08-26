@@ -80,7 +80,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     topPage: Route,
     onBottomNavigate: (Route) -> Unit,
-    onProfileSaved: () -> Unit
+    onProfileSaved: () -> Unit,
+    creatingAccount: Boolean
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -94,7 +95,7 @@ fun ProfileScreen(
         },
         modifier = Modifier.fillMaxSize(),
         bottomBar = { //TODO: change creatingAccount in a data source when creating an account
-            if (!state.creatingAccount) {
+            if (!creatingAccount) {
                 BottomBar(topPage, onBottomNavigate)
             }
         }
@@ -314,7 +315,9 @@ fun PhotoSelectorArea(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true,
+    device = "spec:width=1080px,height=2340px,dpi=440"
+)
 @Composable
 fun PreviewPhotoSelectorArea() {
     PhotoSelectorArea(emptyList(), {}, {})

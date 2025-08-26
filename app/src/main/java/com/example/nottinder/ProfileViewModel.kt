@@ -13,8 +13,7 @@ import javax.inject.Inject
 
 data class ProfileState(
     val self: User = User(-1, "", "", emptyList<Uri>()),
-    val temporaryPhotoUris: List<Uri> = emptyList<Uri>(),
-    val creatingAccount: Boolean = false
+    val temporaryPhotoUris: List<Uri> = emptyList<Uri>()
 )
 
 @HiltViewModel

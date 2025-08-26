@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,6 +97,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                var creatingAccount by rememberSaveable { mutableStateOf(false) }
+
                 NavDisplay(
                     backStack = currentBackStack,
                     onBack = { currentBackStack.removeLastOrNull() }) { route ->
@@ -103,7 +106,10 @@ class MainActivity : ComponentActivity() {
                         is Route.Login -> NavEntry(route) {
                             LoginScreen(
                                 onLoginVerified = { backstackKey = Route.Candidates },
-                                onCreateProfileClicked = { currentBackStack.add(Route.Profile) })
+                                onCreateProfileClicked = {
+                                    currentBackStack.add(Route.Profile)
+                                    creatingAccount = true
+                                })
                         }
 
                         is Route.Candidates -> NavEntry(route) {
@@ -119,8 +125,10 @@ class MainActivity : ComponentActivity() {
                                     if (currentBackStack.first() == Route.Login) {
                                         currentBackStack.removeRange(1, currentBackStack.size)
                                         backstackKey = Route.Candidates
+                                        creatingAccount = false
                                     }
-                                })
+                                },
+                                creatingAccount)
                         }
 
                         is Route.Settings -> NavEntry(route) {
