@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 data class ProfileState(
     val self: User = User(-1, "", "", emptyList<Uri>()),
+    val temporaryPhotoUris: List<Uri> = emptyList<Uri>(),
     val creatingAccount: Boolean = false
 )
 
@@ -28,30 +29,30 @@ class ProfileViewModel @Inject constructor(
             userDataSource.getSelf().collect { self ->
                 _state.update { currentState ->
                     currentState.copy(
-                        self = self ?: userDataSource.nullCandidate
+                        self = self ?: userDataSource.nullCandidate,
+                        temporaryPhotoUris = self?.pictureUris ?: emptyList()
                     )
                 }
             }
         }
     }
 
-    /*
-    fun updateName(newName: String) {
-        userDataSource.updateName(state.value.self.id, newName)
+    fun addTemporaryPhoto(uri: Uri) {
+        _state.update { currentState ->
+            currentState.copy(
+                temporaryPhotoUris = currentState.temporaryPhotoUris + uri
+            )
+        }
     }
 
-    fun updateBio(newBio: String) {
-        userDataSource.updateBio(state.value.self.id, newBio)
+    fun removeTemporaryPhoto(uri: Uri) {
+        _state.update { currentState ->
+            currentState.copy(
+                temporaryPhotoUris = currentState.temporaryPhotoUris - uri
+            )
+        }
     }
 
-    fun addPhoto(uri: Uri) {
-        userDataSource.updatePhotos(state.value.self.id, state.value.self.pictureUris + uri)
-    }
-
-    fun setPhotos(uris: List<Uri>) {
-        userDataSource.updatePhotos(state.value.self.id, uris)
-    }
-*/
     fun updateUser(user: User) {
         userDataSource.updateSelf(user)
     }

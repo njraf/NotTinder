@@ -84,7 +84,6 @@ fun ProfileScreen(
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val photoUris = rememberSaveable { state.self.pictureUris.toMutableStateList() } //TODO: move to viewModel
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -102,10 +101,10 @@ fun ProfileScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             PhotoSelectorArea(
-                photoUris,
+                state.temporaryPhotoUris,
                 { uri ->
-                    if (uri !in photoUris) {
-                        photoUris.add(uri)
+                    if (uri !in state.temporaryPhotoUris) {
+                        viewModel.addTemporaryPhoto(uri)
                     } else {
                         scope.launch {
                             snackbarHostState.showSnackbar("Cannot add the same photo twice")
@@ -113,20 +112,18 @@ fun ProfileScreen(
                     }
                 },
                 { uri ->
-                    photoUris.remove(uri)
+                    viewModel.removeTemporaryPhoto(uri)
+                    TODO("need to delete uri from temp or real photos")
                 })
 
             InputFields(state.self, onProfileSaved) { newName, newBio ->
-                if (newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
+                if (newName.isEmpty() || newBio.isEmpty() || state.temporaryPhotoUris.isEmpty()) {
                     scope.launch {
                         snackbarHostState.showSnackbar("Empty field or photo")
                     }
                     return@InputFields false
                 }
-                /*viewModel.updateName(newName)
-                viewModel.updateBio(newBio)
-                viewModel.setPhotos(photoUris.toList())*/
-                viewModel.updateUser(User(id = state.self.id, name = newName, biography = newBio, pictureUris = photoUris))
+                viewModel.updateUser(User(id = state.self.id, name = newName, biography = newBio, pictureUris = state.temporaryPhotoUris))
                 return@InputFields true
             }
         }
