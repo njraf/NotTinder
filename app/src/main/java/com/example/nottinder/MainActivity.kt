@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,9 +43,13 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.nottinder.ui.theme.NotTinderTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
 @Serializable
 sealed interface Route : NavKey {
+    @Serializable
+    data object Login : Route
+
     @Serializable
     data object Candidates : Route
 
@@ -65,16 +70,25 @@ class MainActivity : ComponentActivity() {
                 val matchMakingViewModel: MatchMakingViewModel = hiltViewModel()
                 val profileViewModel: ProfileViewModel = hiltViewModel()
 
+                val loginBackstack = rememberNavBackStack(Route.Login)
                 val candidatesBackstack = rememberNavBackStack(Route.Candidates)
                 val profileBackstack = rememberNavBackStack(Route.Profile)
                 val settingsBackstack = rememberNavBackStack(Route.Settings)
 
-                var backstackKey: Route by remember { mutableStateOf(Route.Candidates) }
+                val allBackstacks = listOf(
+                    loginBackstack,
+                    candidatesBackstack,
+                    profileBackstack,
+                    settingsBackstack
+                )
+
+                var backstackKey: Route by remember { mutableStateOf(Route.Login) }
                 val currentBackStack = when (backstackKey) {
+                    Route.Login -> loginBackstack
                     Route.Candidates -> candidatesBackstack
                     Route.Profile -> profileBackstack
                     Route.Settings -> settingsBackstack
-                    else -> candidatesBackstack
+                    else -> loginBackstack
                 }
 
                 val changeBackstack: (Route) -> Unit = { route ->
@@ -83,20 +97,48 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                var creatingAccount by rememberSaveable { mutableStateOf(false) }
+
                 NavDisplay(
                     backStack = currentBackStack,
                     onBack = { currentBackStack.removeLastOrNull() }) { route ->
                     when (route) {
+                        is Route.Login -> NavEntry(route) {
+                            LoginScreen(
+                                onLoginVerified = { backstackKey = Route.Candidates },
+                                onCreateProfileClicked = {
+                                    currentBackStack.add(Route.Profile)
+                                    creatingAccount = true
+                                })
+                        }
+
                         is Route.Candidates -> NavEntry(route) {
-                            MatchMakingScreen(matchMakingViewModel,  backstackKey, changeBackstack)
+                            MatchMakingScreen(matchMakingViewModel, backstackKey, changeBackstack)
                         }
 
                         is Route.Profile -> NavEntry(route) {
-                            ProfileScreen(profileViewModel, backstackKey, changeBackstack)
+                            ProfileScreen(
+                                profileViewModel,
+                                backstackKey,
+                                changeBackstack,
+                                onProfileSaved = {
+                                    if (currentBackStack.first() == Route.Login) {
+                                        currentBackStack.removeRange(1, currentBackStack.size)
+                                        backstackKey = Route.Candidates
+                                        creatingAccount = false
+                                    }
+                                },
+                                creatingAccount)
                         }
 
                         is Route.Settings -> NavEntry(route) {
-                            SettingsScreen(backstackKey, changeBackstack)
+                            SettingsScreen(
+                                backstackKey,
+                                changeBackstack,
+                                onLogout = {
+                                    allBackstacks.forEach { it.removeRange(1, it.size) }
+                                    backstackKey = Route.Login
+                                })
                         }
 
                         else -> NavEntry(route) { Text("Unknown Page") }

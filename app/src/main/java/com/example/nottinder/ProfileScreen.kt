@@ -76,21 +76,15 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 @Composable
-fun Modifier.roundedBorder(): Modifier = this.border(
-    width = 2.dp,
-    color = Color.Black,
-    shape = RoundedCornerShape(dimensionResource(R.dimen.image_radius))
-)
-
-@Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     topPage: Route,
-    onBottomNavigate: (Route) -> Unit
+    onBottomNavigate: (Route) -> Unit,
+    onProfileSaved: () -> Unit,
+    creatingAccount: Boolean
 ) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val photoUris = rememberSaveable { state.self.pictureUris.toMutableStateList() }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -101,15 +95,17 @@ fun ProfileScreen(
         },
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            BottomBar(topPage, onBottomNavigate)
+            if (!creatingAccount) {
+                BottomBar(topPage, onBottomNavigate)
+            }
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             PhotoSelectorArea(
-                photoUris,
+                state.temporaryPhotoUris,
                 { uri ->
-                    if (uri !in photoUris) {
-                        photoUris.add(uri)
+                    if (uri !in state.temporaryPhotoUris) {
+                        viewModel.addTemporaryPhoto(uri)
                     } else {
                         scope.launch {
                             snackbarHostState.showSnackbar("Cannot add the same photo twice")
@@ -117,26 +113,25 @@ fun ProfileScreen(
                     }
                 },
                 { uri ->
-                    photoUris.remove(uri)
+                    viewModel.removeTemporaryPhoto(uri)
                 })
 
-            InputFields(state.self) { newName, newBio ->
-                if (newName.isEmpty() || newBio.isEmpty() || photoUris.isEmpty()) {
+            InputFields(state.self, onProfileSaved) { newName, newBio ->
+                if (newName.isEmpty() || newBio.isEmpty() || state.temporaryPhotoUris.isEmpty()) {
                     scope.launch {
                         snackbarHostState.showSnackbar("Empty field or photo")
                     }
-                    return@InputFields
+                    return@InputFields false
                 }
-                viewModel.updateName(newName)
-                viewModel.updateBio(newBio)
-                viewModel.setPhotos(photoUris.toList())
+                viewModel.updateUser(User(id = state.self.id, name = newName, biography = newBio, pictureUris = state.temporaryPhotoUris))
+                return@InputFields true
             }
         }
     }
 }
 
 @Composable
-fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
+fun InputFields(user: User, onProfileSaved: () -> Unit, onSubmit: (String, String) -> Boolean) {
     var name by rememberSaveable { mutableStateOf(user.name) }
     var bio by rememberSaveable { mutableStateOf(user.biography) }
 
@@ -200,7 +195,9 @@ fun InputFields(user: User, onSubmit: (String, String) -> Unit) {
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.8f),
             onClick = {
-                onSubmit(name, bio)
+                if (onSubmit(name, bio)) {
+                    onProfileSaved()
+                }
             }) { Text("Save") }
     }
 }
@@ -317,7 +314,9 @@ fun PhotoSelectorArea(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true,
+    device = "spec:width=1080px,height=2340px,dpi=440"
+)
 @Composable
 fun PreviewPhotoSelectorArea() {
     PhotoSelectorArea(emptyList(), {}, {})
@@ -326,5 +325,5 @@ fun PreviewPhotoSelectorArea() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewInputFields() {
-    InputFields(User(-1, "", "", emptyList())) { s1, s2 -> }
+    InputFields(User(-1, "", "", emptyList()), {}) { s1, s2 -> false }
 }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MatchMakingState(
-    val currentCandidate: User = User(0, "", "", emptyList()),
+    val currentCandidate: User = User(-1, "", "", emptyList()),
     val photoUri: Uri = "".toUri()
 )
 
@@ -21,22 +21,26 @@ data class MatchMakingState(
 class MatchMakingViewModel @Inject constructor(
     private val userDataSource: UserDataSource
 ) : ViewModel() {
-    private val nullCandidate = User(-1, "", "", emptyList())
-    private var self: User? = null
 
     private var candidates = mutableListOf<User>()
 
     private var currentImageIndex = 0
 
     private var _state: MutableStateFlow<MatchMakingState> = MutableStateFlow(MatchMakingState())
-    var state: StateFlow<MatchMakingState> = _state.asStateFlow()
-
+    val state: StateFlow<MatchMakingState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            userDataSource.users.collect { users ->
-                val selfUser: User = users.find { it.id == (self?.id ?: 0) } ?: return@collect
-                updateSelf(selfUser)
+            userDataSource.getUsers().collect { users ->
+                // reset the candidate list
+                currentImageIndex = 0
+                candidates = users.toMutableList()
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentCandidate = candidates.firstOrNull() ?: userDataSource.nullCandidate,
+                        photoUri = users.firstOrNull()?.pictureUris[0] ?: "".toUri()
+                    )
+                }
             }
         }
     }
@@ -47,10 +51,10 @@ class MatchMakingViewModel @Inject constructor(
         currentImageIndex = 0
 
         _state.update { currentState ->
-            val nextCandidate = if (candidates.isNotEmpty()) candidates.first() else nullCandidate
+            val nextCandidate = candidates.firstOrNull() ?: userDataSource.nullCandidate
             currentState.copy(
                 currentCandidate = nextCandidate,
-                photoUri = if (nextCandidate.pictureUris.isEmpty()) "".toUri() else nextCandidate.pictureUris[currentImageIndex]
+                photoUri = nextCandidate.pictureUris.firstOrNull() ?: "".toUri()
             )
         }
     }
@@ -75,7 +79,7 @@ class MatchMakingViewModel @Inject constructor(
             )
         }
     }
-
+/*
     fun updateSelf(myself: User) {
         candidates.remove(self)
         self = myself
@@ -83,11 +87,11 @@ class MatchMakingViewModel @Inject constructor(
         currentImageIndex = 0
 
         _state.update { currentState ->
-            val nextCandidate = if (candidates.isNotEmpty()) candidates.first() else nullCandidate
+            val nextCandidate = if (candidates.isNotEmpty()) candidates.first() else userDataSource.nullCandidate
             currentState.copy(
                 currentCandidate = nextCandidate,
                 photoUri = if (nextCandidate.pictureUris.isEmpty()) "".toUri() else nextCandidate.pictureUris[currentImageIndex]
             )
         }
-    }
+    }*/
 }
